@@ -1,3 +1,5 @@
+# LOAD LIBRARIES
+
 library(ggplot2)
 library(caret)
 library(cluster)
@@ -27,7 +29,7 @@ library(rpart.plot)
  $ Weight_in_gms      : int  1233 3088 3374 1177 2484 1417 2371 2804 1861 1187 ...
  $ Reached.on.Time_Y.N: int  1 1 1 1 1 1 1 1 1 1 ...
 
- #DATA SUMMARY 
+ # DATA SUMMARY 
  
  summary(data)
        ID        Warehouse_block    Mode_of_Shipment  
@@ -59,17 +61,17 @@ library(rpart.plot)
  3rd Qu.:1.0000     
  Max.   :1.0000     
  
- #CHECK FOR MISSING VALUES
+ # CHECK FOR MISSING VALUES
  
  sum(is.na(data))
 [1] 0
 
- #CHECK FOR DUPLICATES
+ # CHECK FOR DUPLICATES
  
  sum(duplicated(data))
 [1] 0
 
- #CHECK FOR NULL VALUES
+ # CHECK FOR NULL VALUES
  sum(is.null(data))
 [1] 0
  
@@ -85,7 +87,7 @@ data$Reached.on.Time_Y.N <- as.factor(data$Reached.on.Time_Y.N)
  data$Mode_of_Shipment <- as.factor(data$Mode_of_Shipment)
  data$Product_importance <- as.factor(data$Product_importance)
 
-#SCALING NUMERIC FEATURES
+# SCALING NUMERIC FEATURES
 
 data$Weight <- scale(data$Weight)
 data$Cost_of_the_Product <- scale(data$Cost_of_the_Product)
@@ -98,8 +100,8 @@ data_scaled <- data
 num_cols <- c("Customer_care_calls", "Cost_of_the_Product", "Discount_offered", "Weight_in_gms")
 data_scaled[num_cols] <- scale(data[num_cols])
  
-#EDA (EXPLORATORY DATA ANALYSIS)
-#DISTIBUTION OF DELIVERY STATUS (USING ( REACHED.ON.TIME_Y.N) VARIABLE)
+# EDA (EXPLORATORY DATA ANALYSIS)
+# DISTIBUTION OF DELIVERY STATUS (USING ( REACHED.ON.TIME_Y.N) VARIABLE)
  
 ggplot(data, aes(x = Reached.on.Time_Y.N, fill = Reached.on.Time_Y.N)) + 
 +   geom_bar() + 
@@ -111,7 +113,7 @@ ggplot(data, aes(x = Reached.on.Time_Y.N, fill = Reached.on.Time_Y.N)) +
 ![image](https://github.com/user-attachments/assets/d360bbe9-68ea-406e-af4e-de28f2bb0a4f)
 
  
-#DELIVERY STATUS BY MODE OF SHIPMENT 
+# DELIVERY STATUS BY MODE OF SHIPMENT 
 
 ggplot(data, aes(x = Mode_of_Shipment, fill = Reached.on.Time_Y.N)) + 
 +   geom_bar() + 
@@ -123,7 +125,7 @@ ggplot(data, aes(x = Mode_of_Shipment, fill = Reached.on.Time_Y.N)) +
   ![image](https://github.com/user-attachments/assets/d8ba9965-d5d1-4493-b6cb-bb671491b7d8)
 
 
-#DELIVERY STATUS BY WAREHOUSE BLOCK
+# DELIVERY STATUS BY WAREHOUSE BLOCK
 
 ggplot(data, aes(x = Warehouse_block, y = Weight, fill = Reached.on.Time_Y.N)) + 
 +   geom_violin() + 
@@ -136,26 +138,26 @@ ggplot(data, aes(x = Warehouse_block, y = Weight, fill = Reached.on.Time_Y.N)) +
 
 
   
-#CHECK EDA ACCURACY
+# CHECK EDA ACCURACY
 
 cat("Exploratory Data Analysis Accuracy:", 100, "\n")
 Exploratory Data Analysis Accuracy: 100 
 
  
-#SPLITTING DATASET INTO TRAINING AND TESTING
+# SPLITTING DATASET INTO TRAINING AND TESTING
 
 set.seed(123)
 splitIndex <- createDataPartition(data$Reached.on.Time_Y.N, p = .70, list = FALSE, times = 1)
 train <- data[ splitIndex,]
 test <- data[-splitIndex,]
 
-#REMOVE ALL NULL AND N/A VALUE
+# REMOVE ALL NULL AND N/A VALUE
 
 train <- na.omit(train)
 test <- na.omit(test)
 
  
-#LOGISTIC REGRESSION
+# LOGISTIC REGRESSION
 #BUILD A MODEL
 
 model.0 <- glm(Reached.on.Time_Y.N ~ ., data = train, family = binomial)
@@ -201,11 +203,11 @@ Number of Fisher Scoring iterations: 6
 predict.0 <- predict(model.0, test, type = "response")
 predict.0 <- ifelse(predict.0 > 0.5, 1, 0)
 
-#Convert predico.0 to factor
+# Convert predico.0 to factor
 
 predict.0 <- as.factor(predict.0)
 
-#EVALUATE THE MODEL
+# EVALUATE THE MODEL
 
 confusionMatrix(predict.0, test$Reached.on.Time_Y.N)
 Confusion Matrix and Statistics
