@@ -7,9 +7,11 @@ library(rpart)
 library(rpart.plot)
  
 # Load the data
+
  data <- read.csv("~/TCD Study/Group project Data mining/Train.csv")
  
- #dataoverview
+ # DATA OVERVIEW 
+ 
  str(data)
 'data.frame':	10999 obs. of  12 variables:
  $ ID                 : int  1 2 3 4 5 6 7 8 9 10 ...
@@ -25,7 +27,8 @@ library(rpart.plot)
  $ Weight_in_gms      : int  1233 3088 3374 1177 2484 1417 2371 2804 1861 1187 ...
  $ Reached.on.Time_Y.N: int  1 1 1 1 1 1 1 1 1 1 ...
 
- #datasummary
+ #DATA SUMMARY 
+ 
  summary(data)
        ID        Warehouse_block    Mode_of_Shipment  
  Min.   :    1   Length:10999       Length:10999      
@@ -56,30 +59,34 @@ library(rpart.plot)
  3rd Qu.:1.0000     
  Max.   :1.0000     
  
- #check for missing values
+ #CHECK FOR MISSING VALUES
+ 
  sum(is.na(data))
 [1] 0
 
- #check for duplicates
+ #CHECK FOR DUPLICATES
+ 
  sum(duplicated(data))
 [1] 0
 
- #check for null values
+ #CHECK FOR NULL VALUES
  sum(is.null(data))
 [1] 0
  
-#check for unique values
+# CHECK FOR UNIQUE VALUES
  unique(data$Gender)
 [1] "F" "M"
 
-#convert variables to factors 
+#CONVERT VARIABLES INTO FACTORS
+
 data$Gender <- as.factor(data$Gender)
 data$Reached.on.Time_Y.N <- as.factor(data$Reached.on.Time_Y.N)
  data$Warehouse_block <- as.factor(data$Warehouse_block)
  data$Mode_of_Shipment <- as.factor(data$Mode_of_Shipment)
  data$Product_importance <- as.factor(data$Product_importance)
 
-#scaling numeric features
+#SCALING NUMERIC FEATURES
+
 data$Weight <- scale(data$Weight)
 data$Cost_of_the_Product <- scale(data$Cost_of_the_Product)
 data$Discount_offered <- scale(data$Discount_offered)
@@ -104,7 +111,8 @@ ggplot(data, aes(x = Reached.on.Time_Y.N, fill = Reached.on.Time_Y.N)) +
 ![image](https://github.com/user-attachments/assets/d360bbe9-68ea-406e-af4e-de28f2bb0a4f)
 
  
-#Dilivery status by shipment distance
+#DELIVERY STATUS BY MODE OF SHIPMENT 
+
 ggplot(data, aes(x = Mode_of_Shipment, fill = Reached.on.Time_Y.N)) + 
 +   geom_bar() + 
 +   labs(title = "Distribution of Delivery Status by Shipment Distance", x = "Delivery Status (0= On time , 1 = Not on time)", y = "Frequency")+
@@ -115,7 +123,8 @@ ggplot(data, aes(x = Mode_of_Shipment, fill = Reached.on.Time_Y.N)) +
   ![image](https://github.com/user-attachments/assets/d8ba9965-d5d1-4493-b6cb-bb671491b7d8)
 
 
-#Delivery status by Warehouse_block using violin plot
+#DELIVERY STATUS BY WAREHOUSE BLOCK
+
 ggplot(data, aes(x = Warehouse_block, y = Weight, fill = Reached.on.Time_Y.N)) + 
 +   geom_violin() + 
 +   labs(title = "Distribution of Delivery Status by Warehouse Block", x = "Warehouse Block", y = "Weight")+
@@ -127,24 +136,27 @@ ggplot(data, aes(x = Warehouse_block, y = Weight, fill = Reached.on.Time_Y.N)) +
 
 
   
-#check EDA accuracy
+#CHECK EDA ACCURACY
+
 cat("Exploratory Data Analysis Accuracy:", 100, "\n")
 Exploratory Data Analysis Accuracy: 100 
 
  
-#Splitting the dataset into training and testing set
+#SPLITTING DATASET INTO TRAINING AND TESTING
+
 set.seed(123)
 splitIndex <- createDataPartition(data$Reached.on.Time_Y.N, p = .70, list = FALSE, times = 1)
 train <- data[ splitIndex,]
 test <- data[-splitIndex,]
- 
-#Remove all the NA values, missing values and duplicates
+
+#REMOVE ALL NULL AND N/A VALUE
+
 train <- na.omit(train)
 test <- na.omit(test)
 
  
-#Logistic Regression 
-#Build a model
+#LOGISTIC REGRESSION
+#BUILD A MODEL
 
 model.0 <- glm(Reached.on.Time_Y.N ~ ., data = train, family = binomial)
 summary(model.0)
@@ -183,16 +195,19 @@ AIC: 8186
 
 Number of Fisher Scoring iterations: 6
 
-> 
-> #Predict the model
-> predict.0 <- predict(model.0, test, type = "response")
-> predict.0 <- ifelse(predict.0 > 0.5, 1, 0)
-> 
-> #Convert predico.0 to factor
-> predict.0 <- as.factor(predict.0)
-> 
-> #Evaluate the model
-> confusionMatrix(predict.0, test$Reached.on.Time_Y.N)
+
+#PREDICT THE MODEL
+
+predict.0 <- predict(model.0, test, type = "response")
+predict.0 <- ifelse(predict.0 > 0.5, 1, 0)
+
+#Convert predico.0 to factor
+
+predict.0 <- as.factor(predict.0)
+
+#EVALUATE THE MODEL
+
+confusionMatrix(predict.0, test$Reached.on.Time_Y.N)
 Confusion Matrix and Statistics
 
           Reference
@@ -221,13 +236,14 @@ Prediction    0    1
        'Positive' Class : 0               
                                           
 
- #Check the model accuracy
+ # CHECK MODEL ACCURACY 
+ 
  cat("Logistic Regression Model Accuracy:", model.0$deviance, "\n")
 Logistic Regression Model Accuracy: 8151.978 
  
- #CLASSIFICATION TREE
+ # CLASSIFICATION TREE
  
- #Build a model
+ # BUILD A MODEL
  
  model.1.0 <- rpart(Reached.on.Time_Y.N ~ ., data = train, method = "class")
  summary(model.1.0)
@@ -301,19 +317,19 @@ Prediction    0    1
        'Positive' Class : 0               
                                           
 
-#check the model accuracy 
+# CHECK THE MODEL ACCURACY 
  
  classification_accuracy <- (1 - model.1.0$cptable[which.min(model.1.0$cptable[, "xerror"]), "xerror"]) * 100
  cat("Classification Tree Model Accuracy:", classification_accuracy, "%\n")
 Classification Tree Model Accuracy: 22.85898 %
  
-#Visualize the tree
+# VISUALIZE THE TREE
  rpart.plot(model.1.0)
 
  ![image](https://github.com/user-attachments/assets/735ad7d8-35db-4f20-9e93-f4fd4d583cf3)
 
 
- #KNN
+ # KNN 
 
  train_X <- train %>% select(-Reached.on.Time_Y.N)
  train_Y <- train$Reached.on.Time_Y.N
@@ -366,7 +382,8 @@ Prediction    0    1
  cat("KNN Model Accuracy:", accuracy, "\n")
 KNN Model Accuracy: 0.6428138 
 
- # Finding optimal k value
+ # FINDING OPTIMAL VALUE OF K
+
  k_values <- seq(1, 20, 2)
 accuracy_values <- c()
 
@@ -377,7 +394,8 @@ accuracy_values <- c()
 +   accuracy_values <- c(accuracy_values, accuracy)
 + }
 
- # Plotting k vs Accuracy
+ # PLOTTING K VS ACCURACY 
+ 
  plot(k_values, accuracy_values, type = "b", col = "blue", xlab = "k - Number of Neighbors", ylab = "Accuracy",
 +      main = "KNN Accuracy for Different k Values")
 
