@@ -158,7 +158,7 @@ test <- na.omit(test)
 
  
 # LOGISTIC REGRESSION
-#BUILD A MODEL
+# BUILD A MODEL
 
 model.0 <- glm(Reached.on.Time_Y.N ~ ., data = train, family = binomial)
 summary(model.0)
@@ -197,8 +197,7 @@ AIC: 8186
 
 Number of Fisher Scoring iterations: 6
 
-
-#PREDICT THE MODEL
+# PREDICT THE MODEL
 
 predict.0 <- predict(model.0, test, type = "response")
 predict.0 <- ifelse(predict.0 > 0.5, 1, 0)
@@ -210,6 +209,7 @@ predict.0 <- as.factor(predict.0)
 # EVALUATE THE MODEL
 
 confusionMatrix(predict.0, test$Reached.on.Time_Y.N)
+
 Confusion Matrix and Statistics
 
           Reference
@@ -249,6 +249,7 @@ Logistic Regression Model Accuracy: 8151.978
  
  model.1.0 <- rpart(Reached.on.Time_Y.N ~ ., data = train, method = "class")
  summary(model.1.0)
+ 
 Call:
 rpart(formula = Reached.on.Time_Y.N ~ ., data = train, method = "class")
   n= 7701 
@@ -321,37 +322,41 @@ Prediction    0    1
 
 # CHECK THE MODEL ACCURACY 
  
- classification_accuracy <- (1 - model.1.0$cptable[which.min(model.1.0$cptable[, "xerror"]), "xerror"]) * 100
- cat("Classification Tree Model Accuracy:", classification_accuracy, "%\n")
+classification_accuracy <- (1 - model.1.0$cptable[which.min(model.1.0$cptable[, "xerror"]), "xerror"]) * 100
+cat("Classification Tree Model Accuracy:", classification_accuracy, "%\n")
+
+# MODEL ACCURACY 
 Classification Tree Model Accuracy: 22.85898 %
  
 # VISUALIZE THE TREE
- rpart.plot(model.1.0)
+
+rpart.plot(model.1.0)
 
  ![image](https://github.com/user-attachments/assets/735ad7d8-35db-4f20-9e93-f4fd4d583cf3)
 
 
  # KNN 
 
- train_X <- train %>% select(-Reached.on.Time_Y.N)
- train_Y <- train$Reached.on.Time_Y.N
+train_X <- train %>% select(-Reached.on.Time_Y.N)
+train_Y <- train$Reached.on.Time_Y.N
 test_X <- test %>% select(-Reached.on.Time_Y.N)
 test_Y <- test$Reached.on.Time_Y.N
  
  
- train_X <- data.frame(lapply(train_X, as.numeric))
- test_X <- data.frame(lapply(test_X, as.numeric))
+train_X <- data.frame(lapply(train_X, as.numeric))
+test_X <- data.frame(lapply(test_X, as.numeric))
  
- train_X <- scale(train_X)
- test_X <- scale(test_X)
- k <- 7
+train_X <- scale(train_X)
+test_X <- scale(test_X)
+k <- 7
 predictions <- knn(train = train_X, test = test_X, cl = train_Y, k = k)
 
 test_Y <- factor(test_Y, levels = c("0", "1"))
- predictions <- factor(predictions, levels = c("0", "1"))
+predictions <- factor(predictions, levels = c("0", "1"))
 
 conf_matrix <- confusionMatrix(predictions, test_Y)
 print(conf_matrix)
+
 Confusion Matrix and Statistics
 
           Reference
@@ -379,9 +384,10 @@ Prediction    0    1
                                           
        'Positive' Class : 0               
                                           
+accuracy <- conf_matrix$overall["Accuracy"]
+cat("KNN Model Accuracy:", accuracy, "\n")
 
- accuracy <- conf_matrix$overall["Accuracy"]
- cat("KNN Model Accuracy:", accuracy, "\n")
+# MODEL ACCURACY
 KNN Model Accuracy: 0.6428138 
 
  # FINDING OPTIMAL VALUE OF K
