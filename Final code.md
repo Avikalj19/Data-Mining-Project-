@@ -13,8 +13,9 @@ library(rpart.plot)
  data <- read.csv("~/TCD Study/Group project Data mining/Train.csv")
  
  # DATA OVERVIEW 
- 
  str(data)
+ 
+# OUTPUT
 'data.frame':	10999 obs. of  12 variables:
  $ ID                 : int  1 2 3 4 5 6 7 8 9 10 ...
  $ Warehouse_block    : chr  "D" "F" "A" "B" ...
@@ -32,6 +33,8 @@ library(rpart.plot)
  # DATA SUMMARY 
  
  summary(data)
+
+ # OUTPUT
        ID        Warehouse_block    Mode_of_Shipment  
  Min.   :    1   Length:10999       Length:10999      
  1st Qu.: 2750   Class :character   Class :character  
@@ -64,19 +67,25 @@ library(rpart.plot)
  # CHECK FOR MISSING VALUES
  
  sum(is.na(data))
+ 
 [1] 0
 
  # CHECK FOR DUPLICATES
  
  sum(duplicated(data))
+ 
 [1] 0
 
  # CHECK FOR NULL VALUES
+ 
  sum(is.null(data))
+ 
 [1] 0
  
 # CHECK FOR UNIQUE VALUES
+
  unique(data$Gender)
+ 
 [1] "F" "M"
 
 #CONVERT VARIABLES INTO FACTORS
@@ -101,6 +110,7 @@ num_cols <- c("Customer_care_calls", "Cost_of_the_Product", "Discount_offered", 
 data_scaled[num_cols] <- scale(data[num_cols])
  
 # EDA (EXPLORATORY DATA ANALYSIS)
+
 # DISTIBUTION OF DELIVERY STATUS (USING ( REACHED.ON.TIME_Y.N) VARIABLE)
  
 ggplot(data, aes(x = Reached.on.Time_Y.N, fill = Reached.on.Time_Y.N)) + 
@@ -141,8 +151,10 @@ ggplot(data, aes(x = Warehouse_block, y = Weight, fill = Reached.on.Time_Y.N)) +
 # CHECK EDA ACCURACY
 
 cat("Exploratory Data Analysis Accuracy:", 100, "\n")
-Exploratory Data Analysis Accuracy: 100 
 
+# ACCURACY
+
+Exploratory Data Analysis Accuracy: 100 
  
 # SPLITTING DATASET INTO TRAINING AND TESTING
 
@@ -163,6 +175,7 @@ test <- na.omit(test)
 model.0 <- glm(Reached.on.Time_Y.N ~ ., data = train, family = binomial)
 summary(model.0)
 
+# OUTPUT
 Call:
 glm(formula = Reached.on.Time_Y.N ~ ., family = binomial, data = train)
 
@@ -210,6 +223,7 @@ predict.0 <- as.factor(predict.0)
 
 confusionMatrix(predict.0, test$Reached.on.Time_Y.N)
 
+# OUTPUT
 Confusion Matrix and Statistics
 
           Reference
@@ -241,6 +255,9 @@ Prediction    0    1
  # CHECK MODEL ACCURACY 
  
  cat("Logistic Regression Model Accuracy:", model.0$deviance, "\n")
+
+ # MODEL ACCURACY
+ 
 Logistic Regression Model Accuracy: 8151.978 
  
  # CLASSIFICATION TREE
@@ -249,6 +266,8 @@ Logistic Regression Model Accuracy: 8151.978
  
  model.1.0 <- rpart(Reached.on.Time_Y.N ~ ., data = train, method = "class")
  summary(model.1.0)
+
+ 
  
 Call:
 rpart(formula = Reached.on.Time_Y.N ~ ., data = train, method = "class")
@@ -289,11 +308,14 @@ Node number 3: 2203 observations
     class counts:     0  2203
    probabilities: 0.000 1.000 
 
- #predict and evaluate the model
+ # PREDICT THE MODEL AND EVALUATE 
+ 
  predict.1.0 <- predict(model.1.0, test, type = "class")
  confusionMatrix(predict.1.0, test$Reached.on.Time_Y.N)
-Confusion Matrix and Statistics
 
+ # OUTPUT
+ 
+Confusion Matrix and Statistics
           Reference
 Prediction    0    1
          0 1330 1036
@@ -326,6 +348,7 @@ classification_accuracy <- (1 - model.1.0$cptable[which.min(model.1.0$cptable[, 
 cat("Classification Tree Model Accuracy:", classification_accuracy, "%\n")
 
 # MODEL ACCURACY 
+
 Classification Tree Model Accuracy: 22.85898 %
  
 # VISUALIZE THE TREE
@@ -357,6 +380,7 @@ predictions <- factor(predictions, levels = c("0", "1"))
 conf_matrix <- confusionMatrix(predictions, test_Y)
 print(conf_matrix)
 
+# OUTPUT
 Confusion Matrix and Statistics
 
           Reference
@@ -388,14 +412,13 @@ accuracy <- conf_matrix$overall["Accuracy"]
 cat("KNN Model Accuracy:", accuracy, "\n")
 
 # MODEL ACCURACY
+
 KNN Model Accuracy: 0.6428138 
 
  # FINDING OPTIMAL VALUE OF K
 
  k_values <- seq(1, 20, 2)
 accuracy_values <- c()
-
- 
  for (k in k_values) {
 +   predictions <- knn(train = train_X, test = test_X, cl = train_Y, k = k)
 +   accuracy <- sum(predictions == test_Y) / length(test_Y)
